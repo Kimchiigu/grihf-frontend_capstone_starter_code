@@ -1,4 +1,5 @@
 import './Navbar.css';
+import { Link } from 'react-router-dom';
 
 function Navbar() {
     const handleClick = () => {
@@ -29,20 +30,16 @@ function Navbar() {
                 </div>
                 <ul className="nav__links active">
                     <li className="link">
-                        <a href="../Landing_Page/LandingPage.html">Home</a>
+                        <Link to="/">Home</Link>
                     </li>
                     <li className="link">
                         <a href="#">Appointments</a>
                     </li>
                     <li className="link">
-                        <a href="../Sign_Up//Sign_Up.html">
-                            <button className="btn1">Sign Up</button>
-                        </a>
+                        <Link to="/sign-up"><button className="btn1">Sign Up</button></Link>
                     </li>
                     <li className="link">
-                        <a href="../Login/Login.html">
-                            <button className="btn1">Login</button>
-                        </a>
+                        <Link to="/login"><button className="btn1">Login</button></Link>
                     </li>
                 </ul>
             </nav>
