@@ -1,7 +1,48 @@
 import './Login.css';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import React, {useEffect, useState} from 'react'
+import { API_URL } from '../../config';
 
 function Login() {
+    const [password, setPassword] = useState("");
+    const [email, setEmail] = useState('');
+    const navigate = useNavigate();
+    useEffect(() => {
+        if (sessionStorage.getItem("auth-token")) {
+            navigate("/")
+        }
+    }, []);
+    const login = async (e) => {
+        e.preventDefault();
+        const res = await fetch(`${API_URL}/api/auth/login`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                // name: name,
+                email: email,
+                password: password,
+            }),
+        });
+        const json = await res.json();
+        if (json.authtoken) {
+            sessionStorage.setItem('auth-token', json.authtoken);
+
+            sessionStorage.setItem('email', email);
+            navigate('/');
+            window.location.reload()
+        } else {
+            if (json.errors) {
+                for (const error of json.errors) {
+                    alert(error.msg);
+                }
+            } else {
+                alert(json.error);
+            }
+        }
+    };
+
     return (
         <div>
             <div className="container">
@@ -14,16 +55,24 @@ function Login() {
                     </div>
                     <br />
                     <div className="login-form">
-                        <form>
+                        <form onSubmit={login}>
                             <div className="form-group">
                                 <label htmlFor="email">Email</label>
-                                <input type="email" name="email" id="email" className="form-control" placeholder="Enter your email"
+                                <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" name="email" id="email" className="form-control" placeholder="Enter your email"
                                     aria-describedby="helpId" />
                             </div>
                             <div className="form-group">
                                 <label htmlFor="password">Password</label>
-                                <input type="password" name="password" id="password" className="form-control"
-                                    placeholder="Enter your password" aria-describedby="helpId" />
+                                <input
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    type="password"
+                                    name="password"
+                                    id="password"
+                                    className="form-control"
+                                    placeholder="Enter your password"
+                                    aria-describedby="helpId"
+                                />
                             </div>
                             <div className="btn-group">
                                 <button type="submit" className="btn btn-primary mb-2 mr-1 waves-effect waves-light">Login</button>

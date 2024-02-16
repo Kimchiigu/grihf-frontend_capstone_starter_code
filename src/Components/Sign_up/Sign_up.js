@@ -1,22 +1,56 @@
 import React, { useState } from 'react';
 import './Sign_up.css';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { API_URL } from '../../config';
 
 function Sign_up() {
-    const [phoneNumber, setPhoneNumber] = useState('');
+    const [phone, setPhone] = useState('');
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [showerr, setShowerr] = useState('');
 
-    const handlePhoneNumberChange = (e) => {
-        // Ensure that only digits are allowed
-        const value = e.target.value.replace(/\D/g, '');
-        setPhoneNumber(value);
+    const navigate = useNavigate();
+
+    const register = async (e) => {
+        e.preventDefault();
+        // API Call
+        const response = await fetch(`${API_URL}/api/auth/register`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                name: name,
+                email: email,
+                password: password,
+                phone: phone,
+            }),
+        });
+        const json = await response.json();
+        if (json.authtoken) {
+            sessionStorage.setItem("auth-token", json.authtoken);
+            sessionStorage.setItem("name", name);
+            // phone and email
+            sessionStorage.setItem("phone", phone);
+            sessionStorage.setItem("email", email);
+            // Redirect to home page
+            navigate("/");   //on directing to home page you need to give logic to change login and signup buttons with name of the user and logout button where you have implemented Navbar functionality
+            window.location.reload();
+        } else {
+            if (json.errors) {
+                for (const error of json.errors) {
+                    setShowerr(error.msg);
+                }
+            } else {
+                setShowerr(json.error);
+            }
+        }
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (phoneNumber.length !== 10) {
-            alert('Phone number must be 10 digits');
-            return;
-        }
+    const handlePhoneNumberChange = (e) => {
+        const value = e.target.value.replace(/\D/g, '');
+        setPhone(value);
     };
 
     return (
@@ -30,27 +64,27 @@ function Sign_up() {
                         Already a member? <span><Link to="/login" style={{ color: '#2190FF' }}> Login</Link></span>
                     </div>
                     <div className="signup-form">
-                        <form onSubmit={handleSubmit}>
+                        <form method='POST' onSubmit={register}>
                             <div className="form-group">
                                 <label htmlFor="name">Name</label>
-                                <input type="text" name="name" id="name" required className="form-control"
+                                <input value={name} onChange={(e) => setName(e.target.value)} type="text" name="name" id="name" required className="form-control"
                                     placeholder="Enter your name" aria-describedby="helpId" />
                             </div>
                             <div className="form-group">
                                 <label htmlFor="phone">Phone</label>
                                 <input type="tel" name="phone" id="phone" required className="form-control"
-                                    value={phoneNumber} onChange={handlePhoneNumberChange}
+                                    value={phone} onChange={handlePhoneNumberChange}
                                     placeholder="Enter your phone number (10 digits)" aria-describedby="helpId" />
-                                {phoneNumber.length !== 10 && <small className="text-danger"><br/>Phone number must be 10 digits</small>}
+                                {phone.length !== 10 && <small className="text-danger"><br />Phone number must be 10 digits</small>}
                             </div>
                             <div className="form-group">
                                 <label htmlFor="email">Email</label>
-                                <input type="email" name="email" id="email" required className="form-control"
-                                    placeholder="Enter your email" aria-describedby="helpId" />
+                                <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" name="email" id="email" className="form-control" placeholder="Enter your email" aria-describedby="helpId" />
+                                {showerr && <div className="err" style={{ color: 'red' }}>{showerr}</div>}
                             </div>
                             <div className="form-group">
                                 <label htmlFor="password">Password</label>
-                                <input name="password" id="password" required className="form-control"
+                                <input value={password} onChange={(e) => setPassword(e.target.value)} name="password" id="password" required className="form-control"
                                     placeholder="Enter your password" aria-describedby="helpId" />
                             </div>
                             <div className="btn-group">
